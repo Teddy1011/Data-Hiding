@@ -688,6 +688,7 @@ void HUSP(L3_NodeInfo &NodeUC)
             I_ExtensionCounter++;
             //cout << NIF.pattern << " | " << NIF.SumUt << endl;
             HUSPattern.push_back(NIF);
+            //Cout_HUSPL3(NIF);
         }
         if (NIF.SumUt > maxut)
         {            
@@ -695,7 +696,6 @@ void HUSP(L3_NodeInfo &NodeUC)
         }
 
         //Cout_HUSPL3(NIF);
-
         HUSP(NIF);
     }
 
@@ -897,7 +897,6 @@ void HUSP(L3_NodeInfo &NodeUC)
         {             
             maxut = NIF.SumUt;
         }
-
         HUSP(NIF);
     }
 }
@@ -965,6 +964,24 @@ void WriteOutHUSPattern(vector<L3_NodeInfo> HUSPattern, double time)
     }
 }
 
+void WriteOutOnlyHUSPattern(vector<L3_NodeInfo> HUSPattern)
+{
+    string Filename = "Remining_" + FileName_DB + "_Minutil_" + to_string((int)MinUtil) + ".txt";
+    ofstream writeFile(Filename);
+
+    if (HUSPattern.empty())
+    {
+        writeFile << "No HUSP." << "\n";
+    }
+    else
+    {
+        for (int i = 0; i < HUSPattern.size(); i++)
+        {
+            writeFile << HUSPattern[i].pattern << "\n";
+        }
+    }
+}
+
 int main()
 {
     SeqData SD;
@@ -977,23 +994,36 @@ int main()
     vector<int> v(1, 0);
     ExternalUt.insert(make_pair(0, 0));
 
-    FileName_Eu = "jzwpaper_utb.txt";
+    //FileName_Eu = "jzwpaper_utb.txt";
     //FileName_DB = "jzwpaper_db.txt";
-    FileName_DB = "Output_jzwpaper_db.txt_Minutil_50.txt";
+    //FileName_DB = "Adjust_jzwpaper_db.txt_Minutil_50.txt";
 
-    //FileName_Eu = "simple_utb.txt";
+    FileName_Eu = "simple_utb.txt";
     //FileName_DB = "simple_db.txt";
-    //FileName_DB = "Output_simple_db.txt_Minutil_584.txt";
+    FileName_DB = "Adjust_simple_db.txt_Minutil_584.txt";
+
+    //FileName_Eu = "simple2_utb.txt";
+    //FileName_DB = "simple2_db.txt";
+    //FileName_DB = "Adjust_simple2_db.txt_Minutil_154.txt";
     
     //FileName_Eu = "4_sign_ExternalUtility.txt";
-    //FileName_DB = "Output_4_sign.txt_Minutil_6800.txt";
+    //FileName_DB = "Adjust_4_sign.txt_Minutil_7200.txt";
     
+    //FileName_Eu = "01.bible_ExternalUtility.txt";
+    //FileName_DB = "Adjust_01.bible.txt_Minutil_90000.txt";
     
+    //FileName_Eu = "03.bms2_ExternalUtility.txt";
+    //FileName_DB = "Adjust_03.bms2.txt_Minutil_26000.txt";
+
     //FileName_Eu = "05.foodmart_ExternalUtility.txt";
-    //FileName_DB = "Output_05.foodmart.txt_Minutil_2752.txt";
+    //FileName_DB = "Adjust_05.foodmart.txt_Minutil_1000.txt";
     //FileName_DB = "05.foodmart.txt";
     
-    MinUtil = 50;
+    //FileName_Eu = "7.RSCS_ExternalUtility.txt";
+    //FileName_DB = "Adjust_7.RSCS.txt_Minutil_17500.txt";
+    //FileName_DB = "7.RSCS.txt";
+    
+    MinUtil = 584;
     cout << endl;
     cout << "--- (Remining)Min utility = " << MinUtil << " ---" << endl;
     cout << "--- (Remining)Database : " << FileName_DB << " ---" << endl;
@@ -1026,6 +1056,7 @@ int main()
         {
             Single_ItemCounter++;
             HUSPattern.push_back(Node_SingleItem[i]);
+            //cout << "Pattern: " << Node_SingleItem[i].pattern << "-->SumUt = " << Node_SingleItem[i].SumUt << endl;
         }
         if (Node_SingleItem[i].SumUt > maxut)
         {
@@ -1060,7 +1091,8 @@ int main()
     cout << endl;
 
     cout << "Start Write out HUS pattern ..." << endl;
-    WriteOutHUSPattern(HUSPattern, time);
+    //WriteOutHUSPattern(HUSPattern, time);
+    WriteOutOnlyHUSPattern(HUSPattern);
 
     cout << "========= Remining HUSP process END ========" << endl;
     cout << endl;

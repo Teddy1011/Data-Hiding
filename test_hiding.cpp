@@ -25,7 +25,8 @@ using namespace std;
     (*尚未往上層找投影點扣，因此此版Node a的樹有超過門檻的情況發生)
 */
 
-/* (2025.11.14目前要解)，2025.12.20已解
+/* 
+(2025.11.14目前要解)，2025.12.20已解
 若Pattern有2個Seq:
 一個Seq無法再被減(所有Iu皆為1)，仍有應減去而未減去的Utility
 一個雖仍有Iu可減，但已減掉該Seq應減去的Utility
@@ -34,7 +35,8 @@ using namespace std;
 
 解決:若仍有Utility應減去而未減，把未減的值傳遞到下一筆序列，若整輪跑完還有未減完的，最多跑到第二輪。
 */
-/* (2026.01.13)
+/* 
+(2026.01.13) MDU
 為了減少序列隱藏失敗的次數，新增一個最大可扣(MDU):Pattern的所有iu扣到剩1後，還有多少Utility可以扣。
 利用這個最大可扣去算rut，可以使有Utility，可扣值已經極低甚至是0的序列降低rut的值。
 也可以讓Utility更大的去承擔更多的rut去扣。
@@ -58,9 +60,9 @@ vector<SeqData> VecDataBase;
 class L1_UtilityInfo
 {
 public:
-    int VecIndex;      // 原vector<int>
-    int VecIu;         // 原vector<int>
-    double VecUtility; // 原vector<double>
+    int VecIndex;     
+    int VecIu;         
+    double VecUtility; 
     double CaseUtility = 0;
     int IdxOfLastLevelIns = 0;
 };
@@ -790,13 +792,16 @@ void REIHUSP_hiding(vector<reference_wrapper<L3_NodeInfo>> &PatternPath)
             TotalMDU += MaxseqMDU;
         }
     }
+    /*    if (diff > TotalMDU) {
+        cout << "[FindPattern] " << leafNode.pattern << " Out Of Math LIMIT" 
+             << " (TotalDiff: " << diff << ", TotalMDU:  " << TotalMDU << ")" << endl;
+    }*/
 
     double curdiff = diff;
     double Unpaidrut = 0;
     int RoundCounter = 0;
     int MaxRound = 2;
-
-    while (TotalMDU > 0 && curdiff > 0 && RoundCounter < MaxRound)
+    while (TotalMDU > diff && curdiff > 0 && RoundCounter < MaxRound)
     {
         RoundCounter++;
         double RutInThisRound = 0;
@@ -818,12 +823,7 @@ void REIHUSP_hiding(vector<reference_wrapper<L3_NodeInfo>> &PatternPath)
             if (TotalMDU > 0)
             {
                 AllocUt = ceil(diff * (VecSeqMDU[i] / TotalMDU));
-            } /*else {
-                // 策略 B: Fallback 模式 (萬一表層全乾了 TotalMDU=0)
-                if (leafNode.SumUt > 0) {                    
-                AllocUt = ceil(diff * (KeepSeqUt / KeepSumUt));
-                }
-            }*/
+            }
 
             double TargetReduce = AllocUt + Unpaidrut;
             if (TargetReduce <= 0)
@@ -847,7 +847,7 @@ void REIHUSP_hiding(vector<reference_wrapper<L3_NodeInfo>> &PatternPath)
                 int idx1b = inst.VecIndex;
                 int idx0 = idx1b - 1;
 
-                double localDropped = 0;
+                double localDropped = 0; //本輪實際扣的Utility
                 int curIu = inst.VecIu;
 
                 if (curIu > 1 && eu > 0)
@@ -898,7 +898,6 @@ void REIHUSP_hiding(vector<reference_wrapper<L3_NodeInfo>> &PatternPath)
                 }
 
                 ActualReduced += localDropped;
-                //KeepReduceUt = curReduceUt;
             }
 
             RutInThisRound += ActualReduced;
@@ -920,7 +919,6 @@ void REIHUSP_hiding(vector<reference_wrapper<L3_NodeInfo>> &PatternPath)
             break;
     }
 }
-
 
 void SingleItem_Hiding(vector<L3_NodeInfo> &Node_SingleItem, int Item)
 {
@@ -958,17 +956,17 @@ void SingleItem_Hiding(vector<L3_NodeInfo> &Node_SingleItem, int Item)
         VecSeqMDU[i] = MaxseqMDU;
         TotalMDU += MaxseqMDU;
     }
-    if (diff > TotalMDU) {
-        cout << "[Find] " << Item << " Out Of Math LIMIT" 
+    /*if (diff > TotalMDU) {
+        cout << "[FindItem] " << Item << " Out Of Math LIMIT" 
              << " (TotalDiff: " << diff << ", TotalMDU:  " << TotalMDU << ")" << endl;
-    }
+    }*/
 
     double curdiff = diff;
     double Unpaidrut = 0;
     int RoundCounter = 0;
     int MaxRound = 2;
 
-    while (TotalMDU > 0 && curdiff > 0 && RoundCounter < MaxRound) 
+    while (TotalMDU > diff && curdiff > 0 && RoundCounter < MaxRound) 
     {
         RoundCounter++;
         double RutInThisRound = 0;
@@ -1065,6 +1063,7 @@ void SingleItem_Hiding(vector<L3_NodeInfo> &Node_SingleItem, int Item)
             break;
     }
 }
+
 void HUSP(L3_NodeInfo &NodeUC)
 {
     if (NodeUC.SumPEU < MinUtil)
@@ -1223,12 +1222,9 @@ void HUSP(L3_NodeInfo &NodeUC)
 
         PatternPath.push_back(ref(NIF));
 
-        /*if(NIF.SumUt == 160){
-            Cout_HUSPL3(NIF);
-        }*/
-
         if (NIF.SumUt >= MinUtil)
         {
+            Cout_HUSPL3(NIF);
             I_ExtensionCounter++;
             REIHUSP_hiding(PatternPath);
         }
@@ -1389,13 +1385,11 @@ void HUSP(L3_NodeInfo &NodeUC)
         }
 
         PatternPath.push_back(ref(NIF));
-        /*if(NIF.SumUt == 128){
-            Cout_HUSPL3(NIF);
-        }*/
+
 
         if (NIF.SumUt >= MinUtil)
         {
-            //cout << "???" << endl;
+            Cout_HUSPL3(NIF);
             S_ExtensionCounter++;
             REIHUSP_hiding(PatternPath);
         }
@@ -1464,14 +1458,14 @@ int main()
     ExternalUt.insert(make_pair(0, 0));
     cout << endl;
 
-    str_EuFile = "simple_utb.txt";
-    str_DBFile = "simple_db.txt";
+    //str_EuFile = "simple_utb.txt";
+    //str_DBFile = "simple_db.txt";
 
-    // str_EuFile = "jzwpaper_utb.txt";
-    // str_DBFile = "jzwpaper_db.txt";
+    str_EuFile = "jzwpaper_utb.txt";
+    str_DBFile = "jzwpaper_db.txt";
 
-    str_EuFile = "05.foodmart_ExternalUtility.txt";
-    str_DBFile = "05.foodmart.txt";
+    //str_EuFile = "05.foodmart_ExternalUtility.txt";
+    //str_DBFile = "05.foodmart.txt";
 
     //str_EuFile = "01.bible_ExternalUtility.txt";
     //str_DBFile = "01.bible.txt";
@@ -1485,7 +1479,7 @@ int main()
     //str_EuFile = "7.RSCS_ExternalUtility.txt";
     //str_DBFile = "7.RSCS.txt";   
      
-    MinUtil = 2000;
+    MinUtil = 0;
 
     cout << "*** (Hiding)Min utility = " << MinUtil << " ***" << endl;
     cout << "*** (Hiding)Database : " << str_DBFile << " ***" << endl;
